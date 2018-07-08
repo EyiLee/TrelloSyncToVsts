@@ -45,6 +45,7 @@ namespace TrelloSyncToVsts
             };
 
             var api = String.Format("{0}?key={1}&token={2}", url, trelloKey, trelloToken);
+
             var response = client.GetAsync(api).Result;
 
             return response.Content.ReadAsStringAsync().Result;
