@@ -13,6 +13,11 @@ namespace TrelloSyncToVsts
         private readonly string trelloKey;
         private readonly string trelloToken;
 
+        private static HttpClient client = new HttpClient
+        {
+            BaseAddress = new Uri("https://api.trello.com")
+        };
+
         public Trello(string trelloKey, string trelloToken)
         {
             this.trelloKey = trelloKey;
@@ -39,11 +44,6 @@ namespace TrelloSyncToVsts
 
         private string Get(string url)
         {
-            var client = new HttpClient
-            {
-                BaseAddress = new Uri("https://api.trello.com")
-            };
-
             var api = String.Format("{0}?key={1}&token={2}", url, trelloKey, trelloToken);
 
             var response = client.GetAsync(api).Result;
