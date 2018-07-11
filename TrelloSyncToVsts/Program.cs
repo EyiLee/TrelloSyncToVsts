@@ -1,4 +1,8 @@
-﻿using System;
+﻿using Microsoft.TeamFoundation.Core.WebApi;
+using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
+using Microsoft.VisualStudio.Services.WebApi.Patch;
+using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,7 +24,29 @@ namespace TrelloSyncToVsts
 
             var vsts = new Vsts(vstsUrl, vstsToken);
 
-            Console.ReadLine();
+            var workItemTrackingClient = vsts.Connection.GetClient<WorkItemTrackingHttpClient>();
+
+            var targetWorkItem = workItemTrackingClient.GetWorkItemAsync(2).Result;
+
+            JsonPatchDocument patchDocument = new JsonPatchDocument
+            {
+                new JsonPatchOperation()
+                {
+                    Operation = Operation.Add,
+                    Path = "/relations/-",
+                    Value = new
+                    {
+                        rel = "System.LinkTypes.Hierarchy-Forward",
+                        url = targetWorkItem.Url,
+                        attributes = new
+                        {
+                            comment = "Making a new link for the dependency"
+                        }
+                    }
+                }
+            };
+
+            var result = workItemTrackingClient.UpdateWorkItemAsync(patchDocument, 1).Result;
         }
     }
 }

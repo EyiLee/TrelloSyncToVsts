@@ -15,6 +15,11 @@ namespace TrelloSyncToVsts
 
         public VssConnection Connection { get; set; }
 
+        /// <summary>
+        /// Constructor of Vsts Class.
+        /// </summary>
+        /// <param name="vstsUrl">Team url of VSTS.</param>
+        /// <param name="vstsToken">Token of VSTS api.</param>
         public Vsts(string vstsUrl, string vstsToken)
         {
             this.vstsUrl = vstsUrl;
