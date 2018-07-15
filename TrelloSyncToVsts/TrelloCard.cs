@@ -22,15 +22,15 @@ namespace TrelloSyncToVsts
         //public string IdBoard { get; set; }
         //public List<string> IdChecklists { get; set; }
         //public List<string> IdLabels { get; set; }
-        //public string IdList { get; set; }
-        //public List<string> IdMembers { get; set; }
+        public string IdList { get; set; }
+        public List<string> IdMembers { get; set; }
         //public List<string> IdMembersVoted { get; set; }
         //public int IdShort { get; set; }
         public List<TrelloLabel> Labels { get; set; }
         //public bool ManualCoverAttachment { get; set; }
         public string Name { get; set; }
         //public float Pos { get; set; }
-        //public string ShortLink { get; set; }
+        public string ShortLink { get; set; }
         public string ShortUrl { get; set; }
         //public bool Subscribed { get; set; }
         public string Url { get; set; }

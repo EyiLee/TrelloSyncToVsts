@@ -30,6 +30,19 @@ namespace TrelloSyncToVsts
         }
 
         /// <summary>
+        /// Get cards information by me.
+        /// </summary>
+        /// <returns>List of cards.</returns>
+        public List<TrelloCard> GetCardsByMe()
+        {
+            var url = String.Format("1/members/me/cards");
+
+            var result = Get(url);
+
+            return JsonConvert.DeserializeObject<List<TrelloCard>>(result);
+        }
+
+        /// <summary>
         /// Get cards information by listid.
         /// </summary>
         /// <param name="id">Id of the list.</param>
