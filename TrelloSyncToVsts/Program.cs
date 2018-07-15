@@ -1,13 +1,8 @@
-﻿using Microsoft.TeamFoundation.Core.WebApi;
-using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
-using Microsoft.VisualStudio.Services.WebApi.Patch;
+﻿using Microsoft.VisualStudio.Services.WebApi.Patch;
 using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TrelloSyncToVsts
 {
