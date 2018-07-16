@@ -8,28 +8,29 @@ namespace TrelloSyncToVsts
 {
     class Program
     {
-        private static readonly string trelloKey = "";
-        private static readonly string trelloToken = "";
+        private static readonly string TrelloKey = Properties.Settings.Default.TrelloKey;
+        private static readonly string TrelloToken = Properties.Settings.Default.TrelloToken;
 
-        private static readonly string trelloList = "";
+        private static readonly string VstsUrl = Properties.Settings.Default.VstsUrl;
+        private static readonly string VstsToken = Properties.Settings.Default.VstsToken;
 
-        private static readonly string vstsUrl = "";
-        private static readonly string vstsToken = "";
+        private static readonly string IdListFrom = Properties.Settings.Default.IdListFrom;
+        private static readonly string IdListTo = Properties.Settings.Default.IdListTo;
 
-        private static readonly int vstsPBI = 0;
-        private static readonly string vstsUser = "";
+        private static readonly int IdPbi = Properties.Settings.Default.IdPbi;
+        private static readonly string UserName = Properties.Settings.Default.UserName;
 
         static void Main(string[] args)
         {
-            var trello = new Trello(trelloKey, trelloToken);
+            var trello = new Trello(TrelloKey, TrelloToken);
 
-            var vsts = new Vsts(vstsUrl, vstsToken);
+            var vsts = new Vsts(VstsUrl, VstsToken);
 
             var cards = trello.GetCardsByMe()
-                .Where(c => c.IdList == trelloList)
+                .Where(c => c.IdList == IdListFrom)
                 .ToList();
 
-            var targetPBI = vsts.WorkItemTrackingClient.GetWorkItemAsync(vstsPBI).Result;
+            var targetPBI = vsts.WorkItemTrackingClient.GetWorkItemAsync(IdPbi).Result;
 
             var areaPath = targetPBI.Fields["System.AreaPath"].ToString();
             var iterationPath = targetPBI.Fields["System.IterationPath"].ToString();
@@ -70,7 +71,7 @@ namespace TrelloSyncToVsts
                     {
                         Operation = Operation.Add,
                         Path = "/fields/System.AssignedTo",
-                        Value = vstsUser
+                        Value = UserName
                     },
 
                     new JsonPatchOperation()
@@ -151,7 +152,10 @@ namespace TrelloSyncToVsts
                     );
                 }
 
-                vsts.WorkItemTrackingClient.CreateWorkItemAsync(patchDocument, teamProject, "Task").Wait();
+                var response = vsts.WorkItemTrackingClient.CreateWorkItemAsync(patchDocument, teamProject, "Task").Result;
+
+                trello.MoveCardToList(card.Id, IdListTo);
+                trello.AddCommentToCard(card.Id, response.Id.ToString());
                 Console.WriteLine("Progress done.\n");
             }
 

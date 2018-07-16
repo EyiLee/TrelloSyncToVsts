@@ -41,7 +41,7 @@ namespace TrelloSyncToVsts
 
             var result = response.Result.Content.ReadAsStreamAsync().Result;
 
-            Console.WriteLine("-- Uploading \"{0}\".", fileName);
+            Console.WriteLine($"-- Uploading \"{fileName}\".");
 
             attachmentReference = WorkItemTrackingClient.CreateAttachmentAsync(result, fileName).Result;
 
@@ -58,7 +58,7 @@ namespace TrelloSyncToVsts
 
                 var result = response.Result.Content.ReadAsStreamAsync().Result;
 
-                Console.WriteLine("-- Uploading \"{0}\".", file.Name);
+                Console.WriteLine($"-- Uploading \"{file.Name}\".");
 
                 var attachmentReference = WorkItemTrackingClient.CreateAttachmentAsync(result, file.Name).Result;
 
