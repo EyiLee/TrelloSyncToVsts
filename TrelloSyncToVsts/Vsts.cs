@@ -67,5 +67,24 @@ namespace TrelloSyncToVsts
 
             return attachmentReferences;
         }
+
+
+        public List<AttachmentReference> SyncAttachments(List<TrelloAttachment> attachments)
+        {
+            List<AttachmentInfo> attachmentInfos = new List<AttachmentInfo>();
+
+            foreach (var attachment in attachments)
+            {
+                AttachmentInfo item = new AttachmentInfo()
+                {
+                    Url = attachment.Url,
+                    Name = attachment.Name
+                };
+
+                attachmentInfos.Add(item);
+            }
+
+            return SyncFiles(attachmentInfos);
+        }
     }
 }

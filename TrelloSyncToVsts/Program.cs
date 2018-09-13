@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace TrelloSyncToVsts
 {
@@ -22,14 +23,17 @@ namespace TrelloSyncToVsts
 
         static void Main(string[] args)
         {
-            var trello = new Trello(TrelloKey, TrelloToken);
+            // Initialize connection instances
+            Trello trello = new Trello(TrelloKey, TrelloToken);
 
-            var vsts = new Vsts(VstsUrl, VstsToken);
+            Vsts vsts = new Vsts(VstsUrl, VstsToken);
 
+            // Get trello cards list by user
             var cards = trello.GetCardsByMe()
                 .Where(c => c.IdList == IdListFrom)
                 .ToList();
 
+            // Get VSTS BPI infomation
             var targetPBI = vsts.WorkItemTrackingClient.GetWorkItemAsync(IdPbi).Result;
 
             var areaPath = targetPBI.Fields["System.AreaPath"].ToString();
@@ -42,22 +46,9 @@ namespace TrelloSyncToVsts
             {
                 Console.WriteLine("Syncing card \"{0}\" to VSTS.", card.Name);
 
-                var attachments = trello.GetAttachmentsByCardId(card.Id);
+                #region -- Query --
 
-                List<AttachmentInfo> attachmentInfos = new List<AttachmentInfo>();
-                foreach (var attachment in attachments)
-                {
-                    AttachmentInfo item = new AttachmentInfo()
-                    {
-                        Url = attachment.Url,
-                        Name = attachment.Name
-                    };
-
-                    attachmentInfos.Add(item);
-                }
-
-                var attachmentReferences = vsts.SyncFiles(attachmentInfos);
-
+                // Create query for new task of VSTS
                 JsonPatchDocument patchDocument = new JsonPatchDocument
                 {
                     new JsonPatchOperation()
@@ -132,6 +123,37 @@ namespace TrelloSyncToVsts
                     }
                 };
 
+                #endregion
+
+                #region -- Tags --
+
+                // Extract tags from card name and sync to VSTS
+                var matches = Regex.Matches(card.Name, @"(?<=\[)[^\[\]]*(?=\])");
+
+                string tags = string.Empty;
+                foreach (var tag in matches)
+                {
+                    tags += tag + ",";
+                }
+
+                patchDocument.Add(
+                    new JsonPatchOperation()
+                    {
+                        Operation = Operation.Add,
+                        Path = "/fields/System.Tags",
+                        Value = tags
+                    }
+                );
+
+                #endregion
+
+                #region -- Attachments --
+
+                // Get attachments from Trello and sync to VSTS
+                var attachments = trello.GetAttachmentsByCardId(card.Id);
+
+                var attachmentReferences = vsts.SyncAttachments(attachments);
+
                 foreach (var attachmentreference in attachmentReferences)
                 {
                     patchDocument.Add(
@@ -145,12 +167,14 @@ namespace TrelloSyncToVsts
                                 url = attachmentreference.Url,
                                 attributes = new
                                 {
-                                    comment = "Attach new file"
+                                    comment = ""
                                 }
                             }
                         }
                     );
                 }
+
+                #endregion
 
                 var response = vsts.WorkItemTrackingClient.CreateWorkItemAsync(patchDocument, teamProject, "Task").Result;
 
@@ -159,7 +183,7 @@ namespace TrelloSyncToVsts
                 Console.WriteLine("Progress done.\n");
             }
 
-            Console.WriteLine("!! All cards have been synced. !!");
+            Console.WriteLine("All cards have been synced.");
             Console.ReadLine();
         }
     }
